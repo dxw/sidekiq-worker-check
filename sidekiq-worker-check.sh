@@ -15,7 +15,7 @@ usage() {
 }
 
 send_slack_message() {
-  curl -s -X POST -H "Content-type: application/json" --data '{"text":"$1"}' "$SLACK_WEBHOOK_URL"
+  curl -s -X POST -H "Content-type: application/json" --data "{\"text\":\"$1\"}" "$SLACK_WEBHOOK_URL"
 }
 
 # if there are no arguments passed exit with usage
@@ -82,14 +82,14 @@ echo "Sidekiq last ran $time_since_last_run seconds ago"
 if [ $time_since_last_run -ge "$CRITICAL" ]
 then
     echo "CRITICAL"
-    send_slack_message
+    send_slack_message "CRITICAL: Last sidekiq worker performed $time_since_last_run seconds ago"
     exit 2
 fi
 
 if [ $time_since_last_run -ge "$WARNING" ]
 then
     echo "WARNING"
-    send_slack_message
+    send_slack_message "WARNING: Last sidekiq worker performed $time_since_last_run seconds ago"
     exit 1
 fi
 
