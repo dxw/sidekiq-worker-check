@@ -1,7 +1,9 @@
-FROM redis:alpine
-RUN apk update && apk upgrade
-RUN apk add --no-cache\
+FROM redis:buster
+
+RUN apt-get update && apt-get upgrade -y
+RUN apt-get install -y \
   curl
-COPY ./sidekiq-worker-check.sh /data/sidekiq-worker-check.sh
-RUN /bin/sh -c "chmod u+x /data/sidekiq-worker-check.sh"
-CMD ["/bin/sh", "-c", "sh /data/sidekiq-worker-check.sh"]
+
+COPY ./sidekiq-worker-check.sh /usr/bin/sidekiq-worker-check.sh
+
+CMD ["sidekiq-worker-check.sh"]
