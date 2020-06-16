@@ -1,4 +1,7 @@
 FROM redis:alpine
-COPY ./sidekiq_worker_check.sh /data/sidekiq_worker_check.sh
-RUN /bin/sh -c "chmod u+x /data/sidekiq_worker_check.sh"
-CMD ["/bin/sh", "-c", "sh /data/sidekiq_worker_check.sh"]
+RUN apk update && apk upgrade
+RUN apk add --no-cache\
+  curl
+COPY ./sidekiq-worker-check.sh /data/sidekiq-worker-check.sh
+RUN /bin/sh -c "chmod u+x /data/sidekiq-worker-check.sh"
+CMD ["/bin/sh", "-c", "sh /data/sidekiq-worker-check.sh"]
