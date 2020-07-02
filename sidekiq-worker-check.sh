@@ -11,6 +11,7 @@ usage() {
   echo "  -n               - service name ( required )"
   echo "  -w               - warning time ( default 300 seconds )"
   echo "  -c               - critical time ( default 600 seconds )"
+  echo "  -t               - test (outputs to terminal only)"
   exit 1
 }
 
@@ -28,8 +29,9 @@ HOST=localhost
 PORT=6379
 WARNING=300
 CRITICAL=600
+TEST=0
 
-while getopts "H:p:u:n:w:c:h" opt; do
+while getopts "H:p:u:n:w:c:th" opt; do
   case $opt in
     H)
       HOST=$OPTARG
@@ -45,6 +47,9 @@ while getopts "H:p:u:n:w:c:h" opt; do
       ;;
     w)
       WARNING=$OPTARG
+      ;;
+    t)
+      TEST=1
       ;;
     c)
       CRITICAL=$OPTARG
@@ -77,20 +82,28 @@ fi
 now=$(date +%s)
 time_since_last_run=$((now - last_sidekiq_run))
 
-echo "Sidekiq last ran $time_since_last_run seconds ago"
-
-if [ $time_since_last_run -ge "$CRITICAL" ]
-then
-    echo "CRITICAL"
-    send_slack_message "CRITICAL: Last sidekiq worker performed $time_since_last_run seconds ago on $SERVICE_NAME"
-    exit 2
-fi
+ALERT_LEVEL="OKAY"
+EXIT_CODE=0
 
 if [ $time_since_last_run -ge "$WARNING" ]
 then
-    echo "WARNING"
-    send_slack_message "WARNING: Last sidekiq worker performed $time_since_last_run seconds ago on $SERVICE_NAME"
-    exit 1
+  ALERT_LEVEL="WARNING"
+  EXIT_CODE=1
 fi
 
-exit 0
+if [ $time_since_last_run -ge "$CRITICAL" ]
+then
+  ALERT_LEVEL="CRITICAL"
+  EXIT_CODE=2
+fi
+
+MESSAGE="$ALERT_LEVEL: Last sidekiq worker performed $time_since_last_run seconds ago on $SERVICE_NAME"
+
+if [[ "$TEST" -eq 1 || "$EXIT_CODE" -eq 0 ]];
+then
+  echo "$MESSAGE"
+else
+  send_slack_message "$MESSAGE"
+fi
+
+exit "$EXIT_CODE"
