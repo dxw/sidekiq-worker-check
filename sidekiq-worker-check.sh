@@ -82,14 +82,14 @@ echo "Sidekiq last ran $time_since_last_run seconds ago"
 if [ $time_since_last_run -ge "$CRITICAL" ]
 then
     echo "CRITICAL"
-    send_slack_message "CRITICAL: Last sidekiq worker performed $time_since_last_run seconds ago"
+    send_slack_message "CRITICAL: Last sidekiq worker performed $time_since_last_run seconds ago on $SERVICE_NAME"
     exit 2
 fi
 
 if [ $time_since_last_run -ge "$WARNING" ]
 then
     echo "WARNING"
-    send_slack_message "WARNING: Last sidekiq worker performed $time_since_last_run seconds ago"
+    send_slack_message "WARNING: Last sidekiq worker performed $time_since_last_run seconds ago on $SERVICE_NAME"
     exit 1
 fi
 
